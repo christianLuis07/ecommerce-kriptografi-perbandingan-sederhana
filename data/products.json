@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Laptop Gaming RGB Pro",
+    "description": "Laptop gaming dengan processor Intel i9, RTX 4080, 32GB RAM",
+    "price": 25000000,
+    "category": "Electronics",
+    "image": "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&h=300&fit=crop",
+    "stock": 5
+  },
+  {
+    "id": 2,
+    "name": "Smartphone Android Flagship",
+    "description": "Smartphone dengan kamera 200MP, baterai 5000mAh, 5G",
+    "price": 12000000,
+    "category": "Electronics",
+    "image": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w-400&h=300&fit=crop",
+    "stock": 10
+  }
+]

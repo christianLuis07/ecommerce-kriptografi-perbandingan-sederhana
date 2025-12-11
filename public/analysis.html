@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analisis - CryptoShop</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"
+    />
+    <link href="css/style.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="index.html">
+          <i class="bi bi-shield-lock"></i> CryptoShop
+        </a>
+      </div>
+    </nav>
+
+    <main class="container my-5">
+      <div class="row mb-4">
+        <div class="col">
+          <h1 class="display-5 fw-bold">
+            <i class="bi bi-graph-up-arrow"></i> Analisis Perbandingan Algoritma
+          </h1>
+          <p class="lead">
+            Perbandingan AES-256-CBC vs ChaCha20-Poly1305 untuk transaksi
+            e-commerce
+          </p>
+        </div>
+      </div>
+
+      <!-- Performance Comparison -->
+      <div class="row mb-5">
+        <div class="col">
+          <div class="card">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-speedometer2"></i> Perbandingan Performa
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <button id="run-test-btn" class="btn btn-success w-100">
+                    <i class="bi bi-play-circle"></i> Jalankan Tes Performa
+                  </button>
+                </div>
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text">Iterasi</span>
+                    <input
+                      type="number"
+                      id="iterations"
+                      class="form-control"
+                      value="100"
+                      min="10"
+                      max="1000"
+                    />
+                    <span class="input-group-text">x</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <canvas id="speedChart"></canvas>
+                </div>
+                <div class="col-md-6">
+                  <canvas id="sizeChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Comparison -->
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header bg-warning">
+              <h5 class="mb-0"><i class="bi bi-lock"></i> AES-256-CBC</h5>
+            </div>
+            <div class="card-body">
+              <h6>Karakteristik:</h6>
+              <ul>
+                <li><strong>Tipe:</strong> Block Cipher</li>
+                <li><strong>Key Size:</strong> 256-bit</li>
+                <li><strong>Block Size:</strong> 128-bit</li>
+                <li><strong>Mode:</strong> CBC</li>
+                <li><strong>IV:</strong> 16-byte</li>
+                <li><strong>Padding:</strong> PKCS7</li>
+              </ul>
+
+              <h6>Kelebihan:</h6>
+              <ul>
+                <li>Standard industri (NIST, FIPS)</li>
+                <li>Hardware acceleration (AES-NI)</li>
+                <li>Dukungan luas di semua platform</li>
+                <li>Cocok untuk data besar</li>
+              </ul>
+
+              <h6>Kekurangan:</h6>
+              <ul>
+                <li>Rentan padding oracle attacks</li>
+                <li>Perlu IV yang unik</li>
+                <li>Tidak ada built-in authentication</li>
+                <li>Sequential (tidak parallelizable)</li>
+              </ul>
+
+              <div class="mt-3">
+                <h6>Penggunaan di Industri:</h6>
+                <span class="badge bg-secondary">TLS 1.2</span>
+                <span class="badge bg-secondary">WPA2</span>
+                <span class="badge bg-secondary">Disk Encryption</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header bg-info text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-shield"></i> ChaCha20-Poly1305
+              </h5>
+            </div>
+            <div class="card-body">
+              <h6>Karakteristik:</h6>
+              <ul>
+                <li><strong>Tipe:</strong> Stream Cipher</li>
+                <li><strong>Key Size:</strong> 256-bit</li>
+                <li><strong>Nonce:</strong> 12-byte</li>
+                <li><strong>Mode:</strong> AEAD</li>
+                <li><strong>Tag:</strong> 16-byte</li>
+                <li><strong>Authentication:</strong> Poly1305</li>
+              </ul>
+
+              <h6>Kelebihan:</h6>
+              <ul>
+                <li>Built-in authentication (AEAD)</li>
+                <li>Cepat di software tanpa hardware acceleration</li>
+                <li>Tidak membutuhkan padding</li>
+                <li>Resisten terhadap cache timing attacks</li>
+                <li>Parallelizable</li>
+              </ul>
+
+              <h6>Kekurangan:</h6>
+              <ul>
+                <li>Reuse nonce = catastrophic</li>
+                <li>Relatif baru (standarisasi 2015)</li>
+                <li>Hardware acceleration terbatas</li>
+                <li>Overhead lebih besar (tag authentication)</li>
+              </ul>
+
+              <div class="mt-3">
+                <h6>Penggunaan di Industri:</h6>
+                <span class="badge bg-secondary">TLS 1.3</span>
+                <span class="badge bg-secondary">WireGuard VPN</span>
+                <span class="badge bg-secondary">QUIC</span>
+                <span class="badge bg-secondary">Android</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="row mt-5">
+        <div class="col">
+          <div class="card">
+            <div class="card-header bg-success text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-check-circle"></i> Rekomendasi untuk E-commerce
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4 text-center">
+                  <div class="p-3">
+                    <i class="bi bi-pc-display display-1 text-primary"></i>
+                    <h5 class="mt-3">Server Modern</h5>
+                    <p>
+                      Gunakan ChaCha20-Poly1305 untuk keamanan lebih baik dengan
+                      authentication
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-4 text-center">
+                  <div class="p-3">
+                    <i class="bi bi-phone display-1 text-success"></i>
+                    <h5 class="mt-3">Mobile Devices</h5>
+                    <p>ChaCha20 lebih cepat tanpa AES-NI, hemat baterai</p>
+                  </div>
+                </div>
+                <div class="col-md-4 text-center">
+                  <div class="p-3">
+                    <i class="bi bi-safe display-1 text-warning"></i>
+                    <h5 class="mt-3">Legacy System</h5>
+                    <p>AES-256-CBC untuk kompatibilitas dengan sistem lama</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-info mt-3">
+                <h6><i class="bi bi-lightbulb"></i> Kesimpulan:</h6>
+                <p>
+                  Untuk aplikasi e-commerce modern yang banyak diakses dari
+                  mobile, ChaCha20-Poly1305 memberikan keamanan dan performa
+                  lebih baik. Namun untuk kompatibilitas luas dengan berbagai
+                  device, AES-256-CBC tetap menjadi pilihan yang baik.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Results -->
+      <div class="row mt-5">
+        <div class="col">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="bi bi-table"></i> Hasil Tes Performa
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-striped" id="results-table">
+                  <thead>
+                    <tr>
+                      <th>Parameter</th>
+                      <th>AES-256-CBC</th>
+                      <th>ChaCha20-Poly1305</th>
+                      <th>Pemenang</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Waktu Enkripsi (ms)</td>
+                      <td id="aes-encrypt">-</td>
+                      <td id="chacha-encrypt">-</td>
+                      <td id="winner-encrypt">-</td>
+                    </tr>
+                    <tr>
+                      <td>Waktu Dekripsi (ms)</td>
+                      <td id="aes-decrypt">-</td>
+                      <td id="chacha-decrypt">-</td>
+                      <td id="winner-decrypt">-</td>
+                    </tr>
+                    <tr>
+                      <td>Ukuran Ciphertext (bytes)</td>
+                      <td id="aes-size">-</td>
+                      <td id="chacha-size">-</td>
+                      <td id="winner-size">-</td>
+                    </tr>
+                    <tr>
+                      <td>Overhead Enkripsi</td>
+                      <td id="aes-overhead">-</td>
+                      <td id="chacha-overhead">-</td>
+                      <td id="winner-overhead">-</td>
+                    </tr>
+                    <tr>
+                      <td>Keamanan</td>
+                      <td>Confidentiality</td>
+                      <td>Confidentiality + Integrity</td>
+                      <td>ChaCha20</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/crypto.js"></script>
+    <script src="js/analysis.js"></script>
+  </body>
+</html>
