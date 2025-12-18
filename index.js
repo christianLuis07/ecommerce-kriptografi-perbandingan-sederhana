@@ -14,15 +14,6 @@ app.use(bodyParser.json());
 app.use("/api", apiRoutes);
 app.use("/payment", paymentRoutes);
 
-// PENTING: Jangan gunakan app.get("/") yang mengirim JSON jika ingin menampilkan index.html
-// Komentari atau hapus bagian ini:
-/*
-app.get("/", (req, res) => {
-  res.json({ message: "E-commerce Crypto Backend API" });
-});
-*/
-
-// Tetap gunakan ini untuk lokal, tapi Vercel akan menggunakan vercel.json untuk routing
 app.use(express.static("public"));
 
 // Error handling
