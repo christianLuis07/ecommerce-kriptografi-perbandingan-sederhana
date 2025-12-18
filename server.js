@@ -5,31 +5,25 @@ const apiRoutes = require("./routes/api");
 const paymentRoutes = require("./routes/payment");
 
 const app = express();
-const PORT = 3000;
 
 // middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// Routes
+// Routes API
 app.use("/api", apiRoutes);
 app.use("/payment", paymentRoutes);
 
-// serve Static files (untuk frontend)
-app.use(express.static("public"));
-
-// Basic route
+// PENTING: Jangan gunakan app.get("/") yang mengirim JSON jika ingin menampilkan index.html
+// Komentari atau hapus bagian ini:
+/*
 app.get("/", (req, res) => {
-  res.json({
-    message: "E-commerce Crypto Backend API",
-    endpoints: {
-      products: "/api/products",
-      encrypt: "/payment/encrypt",
-      compare: "/payment/compare",
-      decrypt: "/payment/decrypt",
-    },
-  });
+  res.json({ message: "E-commerce Crypto Backend API" });
 });
+*/
+
+// Tetap gunakan ini untuk lokal, tapi Vercel akan menggunakan vercel.json untuk routing
+app.use(express.static("public"));
 
 // Error handling
 app.use((err, req, res, next) => {
@@ -37,9 +31,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong!" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`API Documentation available at http://localhost:${PORT}`);
-});
+// Port opsional untuk lokal
+const PORT = process.env.PORT || 3000;
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
 
 module.exports = app;
