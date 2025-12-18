@@ -1,10 +1,11 @@
-// Cart functionality - FIXED VERSION
+// Cart functionality - FIXED VERSION FOR VERCEL
 document.addEventListener("DOMContentLoaded", function () {
   loadCartItems();
 
-  document
-    .getElementById("checkout-btn")
-    .addEventListener("click", goToCheckout);
+  const checkoutBtn = document.getElementById("checkout-btn");
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener("click", goToCheckout);
+  }
 });
 
 async function loadCartItems() {
@@ -12,7 +13,9 @@ async function loadCartItems() {
 
   if (cart.length === 0) {
     // Show empty cart message
-    document.getElementById("cart-items").innerHTML = `
+    const cartItemsContainer = document.getElementById("cart-items");
+    if (cartItemsContainer) {
+      cartItemsContainer.innerHTML = `
             <div class="text-center py-5">
                 <i class="bi bi-cart-x display-1 text-muted"></i>
                 <h5 class="mt-3">Keranjang kosong</h5>
@@ -22,16 +25,20 @@ async function loadCartItems() {
                 </a>
             </div>
         `;
-    updateCartSummary([]);
+    }
+    updateCartSummary([], []);
     updateCheckoutButton();
     return;
   }
 
   try {
-    // Load product details from backend
-    const response = await fetch("http://localhost:3000/api/products");
-    const products = await response.json();
+    // PERBAIKAN: Gunakan URL relatif agar bekerja di Vercel
+    const response = await fetch("/api/products");
 
+    if (!response.ok)
+      throw new Error("Gagal mengambil data produk dari server");
+
+    const products = await response.json();
     const cartItemsContainer = document.getElementById("cart-items");
     let itemsHTML = "";
 
@@ -105,22 +112,28 @@ async function loadCartItems() {
       }
     });
 
-    cartItemsContainer.innerHTML = itemsHTML;
+    if (cartItemsContainer) {
+      cartItemsContainer.innerHTML = itemsHTML;
+    }
 
     // Update summary with actual prices
     updateCartSummary(cart, products);
     updateCheckoutButton();
   } catch (error) {
     console.error("Error loading cart:", error);
-    document.getElementById("cart-items").innerHTML = `
+    const cartItemsContainer = document.getElementById("cart-items");
+    if (cartItemsContainer) {
+      cartItemsContainer.innerHTML = `
             <div class="alert alert-danger">
                 <i class="bi bi-exclamation-triangle"></i>
-                Gagal memuat keranjang. Pastikan backend server berjalan.
+                Gagal memuat keranjang. Error: ${error.message}
+                <br>
                 <button class="btn btn-sm btn-outline-secondary mt-2" onclick="loadCartItems()">
                     <i class="bi bi-arrow-clockwise"></i> Coba Lagi
                 </button>
             </div>
         `;
+    }
   }
 }
 
@@ -136,8 +149,8 @@ function updateQuantity(productId, change) {
     }
 
     localStorage.setItem("cart", JSON.stringify(cart));
-    loadCartItems(); // Reload the cart
-    updateCartCount(); // Update navbar count
+    loadCartItems();
+    updateCartCountNavbar();
   }
 }
 
@@ -146,21 +159,23 @@ function removeFromCart(productId) {
   cart = cart.filter((item) => item.id !== productId);
 
   localStorage.setItem("cart", JSON.stringify(cart));
-  loadCartItems(); // Reload the cart
-  updateCartCount(); // Update navbar count
+  loadCartItems();
+  updateCartCountNavbar();
 }
 
 function updateCartSummary(cart, products) {
-  if (!cart || cart.length === 0 || !products) {
-    document.getElementById("subtotal").textContent = "Rp 0";
-    document.getElementById("tax").textContent = "Rp 0";
-    document.getElementById("total").textContent = "Rp 0";
+  const subtotalEl = document.getElementById("subtotal");
+  const taxEl = document.getElementById("tax");
+  const totalEl = document.getElementById("total");
+
+  if (!cart || cart.length === 0 || !products || products.length === 0) {
+    if (subtotalEl) subtotalEl.textContent = "Rp 0";
+    if (taxEl) taxEl.textContent = "Rp 0";
+    if (totalEl) totalEl.textContent = "Rp 0";
     return;
   }
 
-  // Calculate ACTUAL subtotal
   let subtotal = 0;
-
   cart.forEach((cartItem) => {
     const product = products.find((p) => p.id === cartItem.id);
     if (product) {
@@ -168,18 +183,14 @@ function updateCartSummary(cart, products) {
     }
   });
 
-  const tax = subtotal * 0.1; // Pajak 10%
+  const tax = subtotal * 0.1;
   const total = subtotal + tax;
 
-  // Update display
-  document.getElementById("subtotal").textContent =
-    "Rp " + subtotal.toLocaleString("id-ID");
-  document.getElementById("tax").textContent =
-    "Rp " + tax.toLocaleString("id-ID");
-  document.getElementById("total").textContent =
-    "Rp " + total.toLocaleString("id-ID");
+  if (subtotalEl)
+    subtotalEl.textContent = "Rp " + subtotal.toLocaleString("id-ID");
+  if (taxEl) taxEl.textContent = "Rp " + tax.toLocaleString("id-ID");
+  if (totalEl) totalEl.textContent = "Rp " + total.toLocaleString("id-ID");
 
-  // Store total for checkout page
   localStorage.setItem("cartSubtotal", subtotal);
   localStorage.setItem("cartTotal", total);
 }
@@ -187,6 +198,8 @@ function updateCartSummary(cart, products) {
 function updateCheckoutButton() {
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const checkoutBtn = document.getElementById("checkout-btn");
+
+  if (!checkoutBtn) return;
 
   if (cart.length > 0) {
     checkoutBtn.disabled = false;
@@ -205,7 +218,7 @@ function goToCheckout() {
   window.location.href = "checkout.html";
 }
 
-function updateCartCount() {
+function updateCartCountNavbar() {
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -215,7 +228,7 @@ function updateCartCount() {
   });
 }
 
-// Export functions for other files
+// Export functions for global access (inline onclick)
 window.updateQuantity = updateQuantity;
 window.removeFromCart = removeFromCart;
 window.loadCartItems = loadCartItems;

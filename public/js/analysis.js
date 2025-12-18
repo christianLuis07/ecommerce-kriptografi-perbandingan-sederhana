@@ -7,9 +7,10 @@ document.addEventListener("DOMContentLoaded", function () {
   loadComparisonResults();
 
   // Set up test button
-  document
-    .getElementById("run-test-btn")
-    .addEventListener("click", runPerformanceTest);
+  const runTestBtn = document.getElementById("run-test-btn");
+  if (runTestBtn) {
+    runTestBtn.addEventListener("click", runPerformanceTest);
+  }
 });
 
 let speedChart, sizeChart;
@@ -49,18 +50,12 @@ function initializeCharts() {
     options: {
       responsive: true,
       plugins: {
-        title: {
-          display: true,
-          text: "Perbandingan Kecepatan",
-        },
+        title: { display: true, text: "Perbandingan Kecepatan" },
       },
       scales: {
         y: {
           beginAtZero: true,
-          title: {
-            display: true,
-            text: "Waktu (milidetik)",
-          },
+          title: { display: true, text: "Waktu (milidetik)" },
         },
       },
     },
@@ -92,18 +87,12 @@ function initializeCharts() {
     options: {
       responsive: true,
       plugins: {
-        title: {
-          display: true,
-          text: "Perbandingan Ukuran Data",
-        },
+        title: { display: true, text: "Perbandingan Ukuran Data" },
       },
       scales: {
         y: {
           beginAtZero: true,
-          title: {
-            display: true,
-            text: "Bytes",
-          },
+          title: { display: true, text: "Bytes" },
         },
       },
     },
@@ -112,40 +101,32 @@ function initializeCharts() {
 
 function loadComparisonResults() {
   const results = JSON.parse(localStorage.getItem("comparisonResults"));
-
   if (results && results.comparison) {
     updateCharts(results.comparison);
     updateResultsTable(results.comparison);
-    updateRecommendations(results.recommendations);
   }
 }
 
 function updateCharts(comparison) {
-  // Update speed chart
   speedChart.data.datasets[0].data = [
     comparison.aes.avgEncryptTime,
     comparison.chacha.avgEncryptTime,
   ];
-
   speedChart.data.datasets[1].data = [
     comparison.aes.avgDecryptTime,
     comparison.chacha.avgDecryptTime,
   ];
-
   speedChart.update();
 
-  // Update size chart
   sizeChart.data.datasets[0].data = [
     comparison.aes.plaintextSize,
     comparison.aes.ciphertextSize,
     comparison.chacha.ciphertextSize,
   ];
-
   sizeChart.update();
 }
 
 function updateResultsTable(comparison) {
-  // Update AES values
   document.getElementById("aes-encrypt").textContent =
     comparison.aes.avgEncryptTime.toFixed(3) + " ms";
   document.getElementById("aes-decrypt").textContent =
@@ -155,7 +136,6 @@ function updateResultsTable(comparison) {
   document.getElementById("aes-overhead").textContent =
     comparison.aes.overhead + " bytes";
 
-  // Update ChaCha values
   document.getElementById("chacha-encrypt").textContent =
     comparison.chacha.avgEncryptTime.toFixed(3) + " ms";
   document.getElementById("chacha-decrypt").textContent =
@@ -165,7 +145,6 @@ function updateResultsTable(comparison) {
   document.getElementById("chacha-overhead").textContent =
     comparison.chacha.overhead + " bytes";
 
-  // Determine winners
   document.getElementById("winner-encrypt").innerHTML = getWinnerBadge(
     comparison.aes.avgEncryptTime,
     comparison.chacha.avgEncryptTime,
@@ -173,22 +152,20 @@ function updateResultsTable(comparison) {
     "chacha",
     true
   );
-
   document.getElementById("winner-decrypt").innerHTML = getWinnerBadge(
     comparison.aes.avgDecryptTime,
     comparison.chacha.avgDecryptTime,
     "aes",
-    "chacha"
+    "chacha",
+    true
   );
-
   document.getElementById("winner-size").innerHTML = getWinnerBadge(
     comparison.aes.ciphertextSize,
     comparison.chacha.ciphertextSize,
     "aes",
     "chacha",
-    true // lower is better for size
+    true
   );
-
   document.getElementById("winner-overhead").innerHTML = getWinnerBadge(
     comparison.aes.overhead,
     comparison.chacha.overhead,
@@ -200,19 +177,12 @@ function updateResultsTable(comparison) {
 
 function getWinnerBadge(value1, value2, name1, name2, lowerIsBetter = false) {
   if (value1 === value2) return '<span class="badge bg-secondary">Sama</span>';
-
   const winner = (lowerIsBetter ? value1 < value2 : value1 > value2)
     ? name1
     : name2;
   const color = winner === "aes" ? "warning" : "info";
   const displayName = winner === "aes" ? "AES" : "ChaCha";
-
   return `<span class="badge bg-${color}">${displayName}</span>`;
-}
-
-function updateRecommendations(recommendations) {
-  // This function would update recommendation display
-  console.log("Recommendations:", recommendations);
 }
 
 async function runPerformanceTest() {
@@ -220,7 +190,6 @@ async function runPerformanceTest() {
   const iterations =
     parseInt(document.getElementById("iterations").value) || 100;
 
-  // Show loading
   const originalText = testBtn.innerHTML;
   testBtn.innerHTML =
     '<span class="spinner-border spinner-border-sm"></span> Menjalankan tes...';
@@ -236,38 +205,28 @@ async function runPerformanceTest() {
       timestamp: new Date().toISOString(),
     };
 
-    const response = await fetch("http://localhost:3000/payment/compare", {
+    // PERBAIKAN: Gunakan path relatif, hapus http://localhost:3000
+    const response = await fetch("/payment/compare", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         paymentData: testData,
         iterations: iterations,
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const results = await response.json();
-
-    // Store results
     localStorage.setItem("comparisonResults", JSON.stringify(results));
 
-    // Update display
     updateCharts(results.comparison);
     updateResultsTable(results.comparison);
-    updateRecommendations(results.recommendations);
-
-    // Show success message
     showTestSuccess();
   } catch (error) {
     console.error("Performance test error:", error);
     alert("Error menjalankan tes performa: " + error.message);
   } finally {
-    // Restore button
     testBtn.innerHTML = originalText;
     testBtn.disabled = false;
   }
@@ -277,20 +236,12 @@ function showTestSuccess() {
   const alertDiv = document.createElement("div");
   alertDiv.className =
     "alert alert-success alert-dismissible fade show position-fixed";
-  alertDiv.style.cssText = `
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        min-width: 300px;
-    `;
+  alertDiv.style.cssText = `top: 20px; right: 20px; z-index: 9999; min-width: 300px;`;
   alertDiv.innerHTML = `
-        <i class="bi bi-check-circle"></i>
-        Tes performa berhasil dijalankan!
+        <i class="bi bi-check-circle"></i> Tes performa berhasil dijalankan!
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-
   document.body.appendChild(alertDiv);
-
   setTimeout(() => {
     alertDiv.remove();
   }, 5000);

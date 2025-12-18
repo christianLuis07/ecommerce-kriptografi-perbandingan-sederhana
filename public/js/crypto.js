@@ -1,4 +1,4 @@
-// Cryptography functionality for checkout and analysis
+// Cryptography functionality for checkout and analysis - FIXED FOR VERCEL
 document.addEventListener("DOMContentLoaded", function () {
   // For checkout page
   if (document.getElementById("payment-form")) {
@@ -30,7 +30,8 @@ async function loadOrderSummary() {
   }
 
   try {
-    const response = await fetch("http://localhost:3000/api/products");
+    // PERBAIKAN: Gunakan URL relatif
+    const response = await fetch("/api/products");
     const products = await response.json();
 
     let summaryHTML = "";
@@ -70,9 +71,9 @@ async function loadOrderSummary() {
             </div>
         `;
 
-    document.getElementById("order-summary").innerHTML = summaryHTML;
+    const summaryContainer = document.getElementById("order-summary");
+    if (summaryContainer) summaryContainer.innerHTML = summaryHTML;
 
-    // Store order data for encryption
     localStorage.setItem("orderTotal", grandTotal);
   } catch (error) {
     console.error("Error loading order summary:", error);
@@ -82,7 +83,6 @@ async function loadOrderSummary() {
 async function handlePayment(event) {
   event.preventDefault();
 
-  // Show loading
   const submitBtn = event.target.querySelector('button[type="submit"]');
   const originalText = submitBtn.innerHTML;
   submitBtn.innerHTML =
@@ -106,35 +106,27 @@ async function handlePayment(event) {
       items: JSON.parse(localStorage.getItem("cart")) || [],
     };
 
-    // Encrypt the payment data
-    const response = await fetch("http://localhost:3000/payment/encrypt", {
+    // PERBAIKAN: Gunakan URL relatif
+    const response = await fetch("/payment/encrypt", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         paymentData: paymentData,
         algorithm: algorithm,
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const result = await response.json();
-
-    // Display results
     displayEncryptionResults(result, paymentData, algorithm);
 
-    // Clear cart
     localStorage.removeItem("cart");
     localStorage.removeItem("orderTotal");
   } catch (error) {
     console.error("Encryption error:", error);
     alert("Error enkripsi data: " + error.message);
   } finally {
-    // Restore button
     submitBtn.innerHTML = originalText;
     submitBtn.disabled = false;
   }
@@ -142,33 +134,26 @@ async function handlePayment(event) {
 
 function displayEncryptionResults(result, originalData, algorithm) {
   const resultsCard = document.getElementById("results-card");
+  if (!resultsCard) return;
+
   resultsCard.style.display = "block";
 
-  // Update algorithm badge
   const algorithmName = document.getElementById("algorithm-name");
   algorithmName.textContent = result.algorithm;
   algorithmName.className = `badge ${
     algorithm === "aes" ? "bg-warning" : "bg-info"
   }`;
 
-  // Display plaintext
   document.getElementById("plaintext-data").textContent = JSON.stringify(
     originalData,
     null,
     2
   );
-
-  // Display ciphertext
   document.getElementById("ciphertext-data").textContent = result.encryptedData;
-
-  // Display IV/Nonce
   document.getElementById("iv-nonce").textContent = result.iv;
-
-  // Update label based on algorithm
   document.getElementById("iv-label").textContent =
     algorithm === "aes" ? "Initialization Vector (IV):" : "Nonce:";
 
-  // Display tag if present
   if (result.tag) {
     document.getElementById("tag-container").style.display = "block";
     document.getElementById("tag-data").textContent = result.tag;
@@ -176,15 +161,11 @@ function displayEncryptionResults(result, originalData, algorithm) {
     document.getElementById("tag-container").style.display = "none";
   }
 
-  // Store data for decryption test
   localStorage.setItem("lastEncryption", JSON.stringify(result));
   localStorage.setItem("lastAlgorithm", algorithm);
-
-  // Scroll to results
   resultsCard.scrollIntoView({ behavior: "smooth" });
 }
 
-// FUNGSI INI YANG DIUBAH AGAR MEMANGGIL MODAL BOOTSTRAP
 async function handleDecryption() {
   try {
     const lastEncryption = JSON.parse(localStorage.getItem("lastEncryption"));
@@ -195,11 +176,10 @@ async function handleDecryption() {
       return;
     }
 
-    const response = await fetch("http://localhost:3000/payment/decrypt", {
+    // PERBAIKAN: Gunakan URL relatif
+    const response = await fetch("/payment/decrypt", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         encryptedData: lastEncryption.encryptedData,
         iv: lastEncryption.iv,
@@ -208,23 +188,17 @@ async function handleDecryption() {
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const result = await response.json();
 
     if (result.success) {
-      // 1. Tampilkan pesan sukses kecil di halaman
-      document.getElementById("success-message").style.display = "block";
+      const successMsg = document.getElementById("success-message");
+      if (successMsg) successMsg.style.display = "block";
 
-      // 2. Format JSON agar rapi
       const formattedJson = JSON.stringify(result.decryptedData, null, 2);
-
-      // 3. Masukkan data ke dalam Modal
       document.getElementById("decrypted-content").textContent = formattedJson;
 
-      // 4. Tampilkan Modal Bootstrap
       const decryptionModal = new bootstrap.Modal(
         document.getElementById("decryptionModal")
       );
@@ -250,26 +224,17 @@ async function runComparison() {
       timestamp: new Date().toISOString(),
     };
 
-    const response = await fetch("http://localhost:3000/payment/compare", {
+    // PERBAIKAN: Gunakan URL relatif
+    const response = await fetch("/payment/compare", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        paymentData: paymentData,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentData: paymentData }),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const comparison = await response.json();
-
-    // Store comparison results
     localStorage.setItem("comparisonResults", JSON.stringify(comparison));
-
-    // Redirect to analysis page
     window.location.href = "analysis.html";
   } catch (error) {
     console.error("Comparison error:", error);
