@@ -17,7 +17,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 async function loadProducts() {
   try {
-    const response = await fetch("http://localhost:3000/api/products");
+    // PERBAIKAN: Gunakan URL relatif agar bekerja di localhost maupun Vercel
+    const response = await fetch("/api/products");
+
+    if (!response.ok) throw new Error("Network response was not ok");
+
     const products = await response.json();
 
     const container = document.getElementById("products-container");
@@ -62,7 +66,7 @@ async function loadProducts() {
             <div class="col-12">
                 <div class="alert alert-danger">
                     <i class="bi bi-exclamation-triangle"></i>
-                    Gagal memuat produk. Pastikan backend server berjalan di port 3000.
+                    Gagal memuat produk. Error: ${error.message}
                 </div>
             </div>
         `;
@@ -71,30 +75,22 @@ async function loadProducts() {
 
 function addToCart(productId) {
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-  // Check if product already in cart
   const existingItem = cart.find((item) => item.id === productId);
 
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
-    cart.push({
-      id: productId,
-      quantity: 1,
-    });
+    cart.push({ id: productId, quantity: 1 });
   }
 
   localStorage.setItem("cart", JSON.stringify(cart));
   updateCartCount();
-
-  // Show notification
   showNotification("Produk ditambahkan ke keranjang!", "success");
 }
 
 function updateCartCount() {
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
   const cartCountElements = document.querySelectorAll("#cart-count");
   cartCountElements.forEach((element) => {
     element.textContent = totalItems;
@@ -102,28 +98,15 @@ function updateCartCount() {
 }
 
 function showNotification(message, type = "info") {
-  // Create notification element
   const notification = document.createElement("div");
   notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-  notification.style.cssText = `
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        min-width: 300px;
-    `;
-  notification.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
+  notification.style.cssText = `top: 20px; right: 20px; z-index: 9999; min-width: 300px;`;
+  notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
   document.body.appendChild(notification);
-
-  // Auto remove after 3 seconds
   setTimeout(() => {
     notification.remove();
   }, 3000);
 }
 
-// Export functions for other files
 window.addToCart = addToCart;
 window.showNotification = showNotification;

@@ -3,8 +3,8 @@ const router = express.Router();
 const fs = require("fs").promises;
 const path = require("path");
 
-// Path ke data produk
-const productsPath = path.join(__dirname, "../data/products.json");
+// PERBAIKAN: Gunakan process.cwd() agar path file selalu benar di Vercel
+const productsPath = path.join(process.cwd(), "data", "products.json");
 
 // ambil semua produk
 router.get("/products", async (req, res) => {
