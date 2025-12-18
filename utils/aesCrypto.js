@@ -2,22 +2,19 @@ const crypto = require("crypto");
 
 class AESCrypto {
   constructor() {
-    // FIXED 256-bit key (HARUS 32 bytes)
     this.key = Buffer.from(
       "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
       "hex"
     );
 
     this.algorithm = "aes-256-cbc";
-    this.ivLength = 16;
+    this.ivLength = 16; // AES block size selalu 16 bytes
   }
 
-  // Encrypt plaintext
   async encrypt(plaintext) {
     return new Promise((resolve, reject) => {
       try {
-        // FIXED IV (16 bytes)
-        const iv = Buffer.from("0102030405060708090a0b0c0d0e0f10", "hex");
+        const iv = crypto.randomBytes(this.ivLength);
 
         const cipher = crypto.createCipheriv(this.algorithm, this.key, iv);
 
@@ -48,7 +45,8 @@ class AESCrypto {
 
         resolve(decrypted);
       } catch (error) {
-        reject(error);
+        // Handle error jika padding salah (sering terjadi jika key/IV salah)
+        reject(new Error("Dekripsi gagal: " + error.message));
       }
     });
   }

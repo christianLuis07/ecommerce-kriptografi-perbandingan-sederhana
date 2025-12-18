@@ -2,8 +2,11 @@ const crypto = require("crypto");
 
 class ChaChaCrypto {
   constructor() {
-    // Generate a random 256-bit key (32 bytes)
-    this.key = crypto.randomBytes(32);
+    this.key = Buffer.from(
+      "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+      "hex"
+    );
+
     this.algorithm = "chacha20-poly1305";
     this.nonceLength = 12; // 12 bytes for ChaCha20
   }
@@ -12,7 +15,7 @@ class ChaChaCrypto {
   async encrypt(plaintext) {
     return new Promise((resolve, reject) => {
       try {
-        // Generate random nonce
+        // Tetap Random Nonce (Ini WAJIB random setiap enkripsi)
         const nonce = crypto.randomBytes(this.nonceLength);
 
         // Create cipher
@@ -31,7 +34,7 @@ class ChaChaCrypto {
           encrypted: encrypted,
           nonce: nonce.toString("hex"),
           tag: tag.toString("hex"),
-          key: this.key.toString("hex"), // Only for demo!
+          key: this.key.toString("hex"),
         });
       } catch (error) {
         reject(error);
@@ -65,12 +68,17 @@ class ChaChaCrypto {
 
         resolve(decrypted);
       } catch (error) {
-        reject(error);
+        // Pesan error lebih jelas
+        reject(
+          new Error(
+            "Dekripsi ChaCha gagal (Cek Key/Nonce/Tag): " + error.message
+          )
+        );
       }
     });
   }
 
-  // Get current key (for demo purposes)
+  // Get current key
   getKey() {
     return this.key.toString("hex");
   }

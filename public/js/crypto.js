@@ -184,6 +184,7 @@ function displayEncryptionResults(result, originalData, algorithm) {
   resultsCard.scrollIntoView({ behavior: "smooth" });
 }
 
+// FUNGSI INI YANG DIUBAH AGAR MEMANGGIL MODAL BOOTSTRAP
 async function handleDecryption() {
   try {
     const lastEncryption = JSON.parse(localStorage.getItem("lastEncryption"));
@@ -214,15 +215,20 @@ async function handleDecryption() {
     const result = await response.json();
 
     if (result.success) {
+      // 1. Tampilkan pesan sukses kecil di halaman
       document.getElementById("success-message").style.display = "block";
 
-      // Show decrypted data
-      setTimeout(() => {
-        alert(
-          "Dekripsi berhasil! Data asli:\n\n" +
-            JSON.stringify(result.decryptedData, null, 2)
-        );
-      }, 500);
+      // 2. Format JSON agar rapi
+      const formattedJson = JSON.stringify(result.decryptedData, null, 2);
+
+      // 3. Masukkan data ke dalam Modal
+      document.getElementById("decrypted-content").textContent = formattedJson;
+
+      // 4. Tampilkan Modal Bootstrap
+      const decryptionModal = new bootstrap.Modal(
+        document.getElementById("decryptionModal")
+      );
+      decryptionModal.show();
     }
   } catch (error) {
     console.error("Decryption error:", error);

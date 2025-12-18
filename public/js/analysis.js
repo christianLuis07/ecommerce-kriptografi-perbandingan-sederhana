@@ -170,7 +170,8 @@ function updateResultsTable(comparison) {
     comparison.aes.avgEncryptTime,
     comparison.chacha.avgEncryptTime,
     "aes",
-    "chacha"
+    "chacha",
+    true
   );
 
   document.getElementById("winner-decrypt").innerHTML = getWinnerBadge(
